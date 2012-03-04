@@ -10,29 +10,12 @@ package com.bobo.data;
 public final class MethodInfo {
 	private final String name;
 	private final String descriptor;
-	private final int hash;
 	private final ClassInfo containingClass;
 
 	public MethodInfo(final ClassInfo containingClass, final String name, final String descriptor) {
 		this.name = name;
 		this.descriptor = descriptor;
-		this.hash = name.hashCode() ^ 10 + descriptor.hashCode();
 		this.containingClass = containingClass;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof MethodInfo)) {
-			return false;
-		}
-		
-		final MethodInfo mi = (MethodInfo) obj;
-		return mi.name.equals(name) && mi.descriptor.equals(descriptor);
-	}
-
-	@Override
-	public int hashCode() {
-		return hash;
 	}
 
 	/**

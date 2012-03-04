@@ -5,11 +5,15 @@
  */
 package com.bobo.monitor;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,6 +31,10 @@ public class MonitorEventDispatcher {
 	private final File file;
 
 	private final ExecutorService executor;
+
+	public static final int DEFAULT_LISTENING_PORT = 32332;
+	
+	private DataOutputStream outStream;
 
 	private MonitorEventDispatcher() {
 		final String tmpDirPath = System.getProperty("java.io.tmpdir");
@@ -48,6 +56,26 @@ public class MonitorEventDispatcher {
 
 		// consumer-producer with a lot of producers and only one consumer
 		executor = Executors.newSingleThreadExecutor();
+		
+		connectToStatServer();
+	}
+
+	/**
+	 * 
+	 */
+	private void connectToStatServer() {
+		try {
+			Socket socket = new Socket(InetAddress.getLoopbackAddress(), DEFAULT_LISTENING_PORT);
+			outStream = new DataOutputStream(socket.getOutputStream());
+			
+			//init connection
+			outStream.writeUTF(this.toString());
+			outStream.flush();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static MonitorEventDispatcher getInstance() {
@@ -74,10 +102,31 @@ public class MonitorEventDispatcher {
 				System.out.println(format.format(new Date()) + ": The method '" + className + "." + methodName + "' was called for "
 						+ executionTime + " milli sec. Object instance = " + instance);
 
+				writeToStream(className, methodName, startTime, endTime);
+
 				appendToOutFile(className + ";" + methodName + ";" + startTime + ";" + endTime + ";" + instance);
 			}
 		});
 
+	}
+
+	private void writeToStream(String className, String methodName, long startTime, long endTime) {
+		try {
+			outStream.writeUTF(className + "." + methodName);
+			outStream.writeLong(endTime - startTime);
+			outStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+			if (outStream != null) {
+				try {
+					outStream.close();
+				} catch (IOException e1) {
+				}
+			}
+
+			//retry connection
+			connectToStatServer();
+		}
 	}
 
 	private void appendToOutFile(final String line) {

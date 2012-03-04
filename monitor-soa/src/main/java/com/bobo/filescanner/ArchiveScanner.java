@@ -35,7 +35,7 @@ public class ArchiveScanner implements FileScanner {
 			"MonitorEventDispatcher$1.class" };
 
 	public ArchiveScanner(final String archiveFilePath) {
-		this(System.getProperty("java.io.tmpdir") + File.separator + "soa_tmp", archiveFilePath);
+		this(System.getProperty("java.io.tmpdir") + "soa_tmp", archiveFilePath);
 	}
 
 	public ArchiveScanner(final String tmpDirPath, final String archiveFilePath) {
@@ -69,6 +69,10 @@ public class ArchiveScanner implements FileScanner {
 	@Override
 	public String createMonitoringEnabledArchiveForClasses(final Collection<ClassInfo> classInfos) {
 
+		// recreate the target classes. they must be clean in order not to apply changes over 
+		// already changed class
+		unzipFileToLocation(archiveFile, TEMP_DIR_PATH, true);
+		
 		// Adds monitoring info to the compiled class, meaning that this alters the compiled classes
 		ClassModificationUtils.enableMonitoringForSelectedClasses(classInfos);
 
@@ -91,6 +95,8 @@ public class ArchiveScanner implements FileScanner {
 			FileUtils.zipFolderToFile(srcFolder, zipFilePath);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
+		} finally {
+			FileUtils.deleteDirectoryTree(new File(TEMP_DIR_PATH));
 		}
 
 		return zipFilePath;

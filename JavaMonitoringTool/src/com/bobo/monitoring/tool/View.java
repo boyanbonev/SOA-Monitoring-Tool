@@ -113,8 +113,25 @@ public class View extends ViewPart {
 	}
 
 	class ViewLabelProvider extends LabelProvider implements ILabelProvider {
-		private final Image CLASS_IMAGE = Activator.getImageDescriptor("/icons/class.gif").createImage();
-		private final Image METHOD_IMAGE = Activator.getImageDescriptor("/icons/method.gif").createImage();
+		private Image classImage;
+		private Image methodImage;
+
+		private Image getClassImage() {
+			if (classImage == null) {
+				// PlatformUI.getWorkbench().getSharedImages().getImage("class");
+				classImage = Activator.getImageDescriptor("/icons/class.gif").createImage();
+			}
+
+			return classImage;
+		}
+
+		private Image getMethodImage() {
+			if (methodImage == null) {
+				methodImage = Activator.getImageDescriptor("/icons/method.gif").createImage();
+			}
+
+			return methodImage;
+		}
 
 		@Override
 		public String getText(Object element) {
@@ -134,9 +151,9 @@ public class View extends ViewPart {
 
 		public Image getImage(Object element) {
 			if (element instanceof ClassInfo) {
-				return CLASS_IMAGE;
+				return getClassImage();
 			} else if (element instanceof MethodInfo) {
-				return METHOD_IMAGE;
+				return getMethodImage();
 			}
 			return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
 		}
@@ -206,9 +223,10 @@ public class View extends ViewPart {
 						}
 					});
 				} catch (Exception e) {
-					final String message = "A problem occured while trying to open the file and parse its structure: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
-					final MessageDialog errDialog = new MessageDialog(parent.getShell(), "Problem occured", null, message, MessageDialog.ERROR,
-							new String[] { "OK" }, 0);
+					final String message = "A problem occured while trying to open the file and parse its structure: "
+							+ (e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+					final MessageDialog errDialog = new MessageDialog(parent.getShell(), "Problem occured", null, message,
+							MessageDialog.ERROR, new String[] { "OK" }, 0);
 					errDialog.open();
 					continueBtn.setEnabled(false);
 					archiveScanner = null;

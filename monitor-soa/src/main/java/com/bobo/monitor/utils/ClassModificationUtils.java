@@ -66,7 +66,7 @@ public final class ClassModificationUtils {
 			final ClassAdapter filteringAdapter = new MethodFilteringClassAdapter(classWritter, classInfo);
 
 			// start class processing
-			classReader.accept(filteringAdapter, 0);
+			classReader.accept(filteringAdapter, ClassReader.EXPAND_FRAMES);
 			
 			// get the new class' content in compiled state
 			newClassData = classWritter.toByteArray();
