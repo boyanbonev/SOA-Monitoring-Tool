@@ -41,5 +41,17 @@
          </view>
       </perspectiveExtension>
    </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="JavaMonitoringTool.application"
+            name="%productName">
+         <property
+               name="appName"
+               value="%productName">
+         </property>
+      </product>
+   </extension>
 
 </plugin>
